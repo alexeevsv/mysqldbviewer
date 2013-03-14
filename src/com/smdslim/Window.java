@@ -15,6 +15,7 @@ public class Window extends JFrame {
     JTabbedPane databaseTabs = new JTabbedPane();
     JTabbedPane queryTabs = new JTabbedPane();
     JTextField filterTableTF = new JTextField("filter tables");
+    JPanel queryPanel;
     JButton filterApplyBtn = new JButton("apply");
     String currentDatabase;
     boolean connected = false;
@@ -79,7 +80,7 @@ public class Window extends JFrame {
         passwordTF.setBounds(10, 90, 100, 18);
         dbSetUpPanel.add(passwordTF);
          /*поле ввода имени БД*/
-        dbNameTF = new JTextField("billing");
+        dbNameTF = new JTextField("asd");
         dbNameTF.setBounds(10, 130, 100, 18);
         dbSetUpPanel.add(dbNameTF);
         /*кнопка соединения*/
@@ -88,6 +89,7 @@ public class Window extends JFrame {
         connectBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() == connectBtn) {
+                    System.out.println("test");
                     connected = true;
                     try {
                         dataBaseConnection = new DataBaseConnection(serverAddressTF.getText(), userNameTF.getText(), passwordTF.getText(), dbNameTF.getText());
@@ -107,29 +109,41 @@ public class Window extends JFrame {
         mainPanel.add(databaseTabs);
 
         /*вкладки смены запросов*/
-        final JPanel queryPanel = new JPanel();
+        queryPanel = new JPanel();
         queryPanel.setLayout(null);
+        queryPanel.setBorder(BorderFactory.createLineBorder(Color.black));
         /*поле ввода запроса*/
-        queryTA = new JTextArea("type query here please");
+        //TODO: запрос для тестов. убрать
+        String q = "select \n" +
+                "convert(AES_DECRYPT(surname, '2c5ed410984ecf73dc45f481d5a42b4d') using utf8) as surname,\n" +
+                "convert(AES_DECRYPT(firstname, '2c5ed410984ecf73dc45f481d5a42b4d') using utf8) as name\n" +
+                "\n" +
+                "from asd_users;";
+        queryTA = new JTextArea(q);
         queryTA.setWrapStyleWord(true);
         queryTA.setLineWrap(true);
         queryTA.setBounds(10, 10, 700, 100);
         queryPanel.add(queryTA);
+
         /*кнопка выполнения запроса*/
         JButton queryBtn = new JButton("ok");
         queryBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if(connected && dataBaseConnection != null){
+                if (connected && dataBaseConnection != null) {
                     try {
                         dataBaseConnection.query(queryTA.getText());
+//                        System.out.println(dataBaseConnection.tableHeaders.toString());
+//                        System.out.println(dataBaseConnection.queryResult.toString());
+                        drawQueryResult();
                     } catch (SQLException e1) {
-                        JOptionPane.showMessageDialog(queryPanel, "ass");
+                        JOptionPane.showMessageDialog(queryPanel, e1.getMessage());
                     }
                 }
             }
         });
         queryBtn.setBounds(10, 120, 80, 18);
         queryPanel.add(queryBtn);
+
         queryTabs.addTab("query1", queryPanel);
         queryTabs.setBounds(275, 10, 725, 580);
         mainPanel.add(queryTabs);
@@ -150,10 +164,19 @@ public class Window extends JFrame {
         connectionStateLabel = new JLabel(Boolean.toString(connected));
         connectionStateLabel.setBounds(90, 2, 50, 15);
         statusPanel.add(connectionStateLabel);
-
-
     }
 
+    private void drawQueryResult() {
+        String[] columnNames = {"First", "Second", "Third"};
+        Object[][] data = {
+                {"one", "two", 3},
+                {"four", 5, 9}
+        };
+        JTable table = new JTable(data, columnNames);
+        table.setBorder(BorderFactory.createLineBorder(Color.black));
+        table.setBounds(10, 150, 700, 300);
+        queryPanel.add(table);
+    }
 
     private void setUpWindow(String title, int width, int height, boolean resizable) {
         setTitle(title);
